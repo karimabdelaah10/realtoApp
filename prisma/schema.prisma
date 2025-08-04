@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             Int       @id @default(autoincrement())
+  name           String
+  type           UserType  @default(ADMIN)
+  email          String    @unique
+  password       String
+  mobile         String    @unique
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  homes          Home[]
+  buyerMessages  Message[] @relation("buyer_messages")
+  realtoMessages Message[] @relation("realtor_messages")
+}
+
+model Home {
+  id                Int          @id @default(autoincrement())
+  address           String
+  numberOfRooms     Int
+  numberOfBathrooms Int
+  city              String
+  price             Float
+  landSize          Float
+  propertyType      PropertyType
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  images            Image[]
+  realtorId         Int
+  realtor           User         @relation(fields: [realtorId], references: [id])
+  messages          Message[]
+}
+
+model Image {
+  id     Int    @id @default(autoincrement())
+  homeId Int
+  home   Home   @relation(fields: [homeId], references: [id])
+  url    String
+}
+
+model Message {
+  id        Int    @id @default(autoincrement())
+  message   String
+  homeId    Int
+  home      Home   @relation(fields: [homeId], references: [id])
+  buyerId   Int
+  buyer     User   @relation("buyer_messages", fields: [buyerId], references: [id])
+  realtorId Int
+  realtor   User   @relation("realtor_messages", fields: [realtorId], references: [id])
+}
+
+enum UserType {
+  ADMIN
+  REALTOR
+  BUYER
+}
+
+enum PropertyType {
+  RESIDENTIAL
+  CONDO
+}
