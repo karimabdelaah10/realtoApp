@@ -8,10 +8,10 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
   controllers: [HomeController],
   providers: [
     HomeService,
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: ClassSerializerInterceptor,
-    },
+    // {
+    //   provide: APP_INTERCEPTOR,
+    //   useClass: ClassSerializerInterceptor,
+    // },
   ],
   imports: [PrismaModule],
 })

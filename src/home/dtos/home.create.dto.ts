@@ -1,4 +1,18 @@
-import { IsEnum, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
+import { Type } from 'class-transformer';
+
+class Image {
+  @IsString()
+  @IsNotEmpty()
+  url: string;
+}
 
 enum PropertyType {
   RESIDENTIAL = 'RESIDENTIAL',
@@ -38,4 +52,9 @@ export class CreateHomeDto {
   @IsNumber()
   @IsNotEmpty()
   realtorId: number;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => Image)
+  images: Image[];
 }

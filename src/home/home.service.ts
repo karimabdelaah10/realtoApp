@@ -13,7 +13,6 @@ export class HomeService {
   }
 
   async createHome(createHomeData: CreateHomeDto) {
-    console.log(createHomeData);
     const realtorExists = await this.prismaService.user.findFirst({
       where: {
         id: createHomeData.realtorId,
@@ -37,6 +36,12 @@ export class HomeService {
         realtorId: createHomeData.realtorId,
       },
     });
+    const homeImages = createHomeData.images.map((image) => {
+      return { ...image, homeId: createdHome.id };
+    });
+    await this.prismaService.image.createMany({
+      data: homeImages,
+    });
     return {
       code: 200,
       createdHome,
@@ -46,13 +51,43 @@ export class HomeService {
 
   updateHome() {}
 
-  deleteHome() {}
-
   getHomeById(homeId: number) {
     return this.prismaService.home.findFirst({
       where: {
         id: homeId,
       },
     });
+  }
+
+  async deleteHome(homeId: number) {
+    const homeExists = await this.prismaService.home.findFirst({
+      where: {
+        id: homeId,
+      },
+    });
+    if (!homeExists) {
+      return {
+        code: 404,
+        message: 'Home not found',
+      };
+    }
+    const deleteQuires = [
+      this.prismaService.image.deleteMany({
+        where: {
+          homeId: homeId,
+        },
+      }),
+      this.prismaService.home.delete({
+        where: {
+          id: homeId,
+        },
+      }),
+    ];
+
+    await this.prismaService.$transaction(deleteQuires);
+    return {
+      code: 200,
+      message: 'Home deleted successfully',
+    };
   }
 }
