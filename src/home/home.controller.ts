@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseEnumPipe,
   ParseIntPipe,
   Post,
   Query,
@@ -11,6 +12,7 @@ import {
 import { HomeService } from './home.service';
 import { CreateHomeDto } from './dtos/home.create.dto';
 import { PropertyType } from '../../generated/prisma';
+import { User, UserInfo } from '../user/decorators/user.decorator';
 
 @Controller('home')
 export class HomeController {
@@ -19,24 +21,29 @@ export class HomeController {
   @Get()
   getAllHomes(
     @Query('city') city: string,
-    @Query('propertyType') propertyType?: PropertyType,
+    @Query('propertyType', new ParseEnumPipe(PropertyType))
+    propertyType?: PropertyType,
     @Query('minPrice') minPrice?: number,
     @Query('maxPrice') maxPrice?: number,
   ) {
+    const price =
+      minPrice || maxPrice
+        ? {
+            ...(minPrice && { gte: minPrice }),
+            ...(maxPrice && { lte: maxPrice }),
+          }
+        : undefined;
     const filters = {
-      city,
-      propertyType,
-      price: {
-        gte: minPrice || 0, // Default to 0 if minPrice is not provided
-        lte: maxPrice || Infinity, // Default to Infinity if maxPrice is not provided
-      },
+      ...(city && { city }),
+      ...(propertyType && { propertyType }),
+      ...(price && { price }),
     };
     return this.homeService.getAllHomes(filters);
   }
 
   @Post()
-  createHome(@Body() createHomeData: CreateHomeDto) {
-    return this.homeService.createHome(createHomeData);
+  createHome(@Body() createHomeData: CreateHomeDto, @User() user: UserInfo) {
+    return this.homeService.createHome(createHomeData, user.id);
   }
 
   @Get(':id')

@@ -12,7 +12,7 @@ export class HomeResponseDto {
 
   @Expose({ name: 'price' })
   Price() {
-    const newPrice = this.price + 15242;
+    const newPrice = this.price;
     return `$${newPrice.toLocaleString()}`;
   }
 

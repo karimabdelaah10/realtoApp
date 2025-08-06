@@ -2,20 +2,32 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateHomeDto } from './dtos/home.create.dto';
 import { HomeResponseDto } from './dtos/home.response.dto';
+import { PropertyType } from '../../generated/prisma';
+
+interface GetHomesFilters {
+  city?: string;
+  propertyType?: PropertyType;
+  price?: {
+    gte?: number;
+    lte?: number;
+  };
+}
 
 @Injectable()
 export class HomeService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getAllHomes(filters: any): Promise<HomeResponseDto[]> {
-    const homes = await this.prismaService.home.findMany();
+  async getAllHomes(filters: GetHomesFilters): Promise<HomeResponseDto[]> {
+    const homes = await this.prismaService.home.findMany({
+      where: filters,
+    });
     return homes.map((home) => new HomeResponseDto(home));
   }
 
-  async createHome(createHomeData: CreateHomeDto) {
+  async createHome(createHomeData: CreateHomeDto, realtorId: number) {
     const realtorExists = await this.prismaService.user.findFirst({
       where: {
-        id: createHomeData.realtorId,
+        id: realtorId,
       },
     });
     if (!realtorExists) {
@@ -33,7 +45,7 @@ export class HomeService {
         price: createHomeData.price,
         landSize: createHomeData.landSize,
         propertyType: createHomeData.propertyType,
-        realtorId: createHomeData.realtorId,
+        realtorId: realtorId,
       },
     });
     const homeImages = createHomeData.images.map((image) => {
