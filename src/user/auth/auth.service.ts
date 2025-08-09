@@ -83,6 +83,7 @@ export class AuthService {
         name: user.name,
         email: user.email,
         mobile: user.mobile,
+        type: user.type,
       },
       process.env.JWT_TOKEN_KEY as string,
     );

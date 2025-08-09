@@ -8,11 +8,14 @@ import {
   ParseIntPipe,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { HomeService } from './home.service';
 import { CreateHomeDto } from './dtos/home.create.dto';
-import { PropertyType } from '../../generated/prisma';
+import { PropertyType, UserType } from '../../generated/prisma';
 import { User, UserInfo } from '../user/decorators/user.decorator';
+import { Roles } from '../decorators/roles.decorator';
+import { AuthGuard } from '../guards/auth.guard';
 
 @Controller('home')
 export class HomeController {
@@ -41,9 +44,12 @@ export class HomeController {
     return this.homeService.getAllHomes(filters);
   }
 
+  @Roles(UserType.ADMIN, UserType.REALTOR)
+  @UseGuards(AuthGuard)
   @Post()
   createHome(@Body() createHomeData: CreateHomeDto, @User() user: UserInfo) {
-    return this.homeService.createHome(createHomeData, user.id);
+    return ' This is a placeholder for the createHome method. ';
+    // return this.homeService.createHome(createHomeData, user.id);
   }
 
   @Get(':id')
